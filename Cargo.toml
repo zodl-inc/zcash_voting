@@ -5,3 +5,20 @@ members = [
     "vote-commitment-tree-client",
 ]
 resolver = "2"
+
+[patch.crates-io]
+halo2_gadgets = { package = "halo2_gadgets", git = "https://github.com/zodl-inc/halo2-security-fixes.git", rev = "d751768afe0d2105b349dd93f73fde7f2eade088" }
+halo2_proofs = { package = "halo2_proofs", git = "https://github.com/zodl-inc/halo2-security-fixes.git", rev = "d751768afe0d2105b349dd93f73fde7f2eade088" }
+poseidon = { package = "halo2_poseidon", git = "https://github.com/zodl-inc/halo2-security-fixes.git", rev = "d751768afe0d2105b349dd93f73fde7f2eade088" }
+orchard = { git = "https://github.com/zodl-inc/orchard-security-fixes.git", rev = "994dad2f7bb8c85e7c8ea336dcc2a814a94bc9fd" }
+equihash = { git = "https://github.com/zodl-inc/librustzcash-security-fixes", rev = "a4bc18408935df58db686e1834c23bcc8c5680e0" }
+f4jumble = { git = "https://github.com/zodl-inc/librustzcash-security-fixes", rev = "a4bc18408935df58db686e1834c23bcc8c5680e0" }
+pczt = { git = "https://github.com/zodl-inc/librustzcash-security-fixes", rev = "a4bc18408935df58db686e1834c23bcc8c5680e0" }
+transparent = { package = "zcash_transparent", git = "https://github.com/zodl-inc/librustzcash-security-fixes", rev = "a4bc18408935df58db686e1834c23bcc8c5680e0" }
+zcash_address = { git = "https://github.com/zodl-inc/librustzcash-security-fixes", rev = "a4bc18408935df58db686e1834c23bcc8c5680e0" }
+zcash_encoding = { git = "https://github.com/zodl-inc/librustzcash-security-fixes", rev = "a4bc18408935df58db686e1834c23bcc8c5680e0" }
+zcash_keys = { git = "https://github.com/zodl-inc/librustzcash-security-fixes", rev = "a4bc18408935df58db686e1834c23bcc8c5680e0" }
+zcash_primitives = { git = "https://github.com/zodl-inc/librustzcash-security-fixes", rev = "a4bc18408935df58db686e1834c23bcc8c5680e0" }
+zcash_protocol = { git = "https://github.com/zodl-inc/librustzcash-security-fixes", rev = "a4bc18408935df58db686e1834c23bcc8c5680e0" }
+voting-circuits = { git = "https://github.com/zodl-inc/voting-circuits-security-fixes", rev = "fe0e9a01adf6abc956ab2dd112ba0899891a1797" }
+imt-tree = { git = "https://github.com/zodl-inc/vote-nullifier-pir-security-fixes.git", rev = "f8c57997a078fe44f68a65969e34e1c3caab5851" }

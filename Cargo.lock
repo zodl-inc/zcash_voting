@@ -553,8 +553,7 @@ checksum = "edd0f118536f44f5ccd48bcb8b111bdc3de888b58c74639dfb034a357d0f206d"
 [[package]]
 name = "equihash"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "306286e8dcc39ab3dfceb74c792ce8baffdab90591321d3ffaae64829734c37f"
+source = "git+https://github.com/zodl-inc/librustzcash-security-fixes?rev=a4bc18408935df58db686e1834c23bcc8c5680e0#a4bc18408935df58db686e1834c23bcc8c5680e0"
 dependencies = [
  "blake2b_simd",
  "corez",
@@ -569,8 +568,7 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 [[package]]
 name = "f4jumble"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d42773cb15447644d170be20231a3268600e0c4cea8987d013b93ac973d3cf7"
+source = "git+https://github.com/zodl-inc/librustzcash-security-fixes?rev=a4bc18408935df58db686e1834c23bcc8c5680e0#a4bc18408935df58db686e1834c23bcc8c5680e0"
 dependencies = [
  "blake2b_simd",
 ]
@@ -796,9 +794,8 @@ dependencies = [
 
 [[package]]
 name = "halo2_gadgets"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45824ce0dd12e91ec0c68ebae2a7ed8ae19b70946624c849add59f1d1a62a143"
+version = "0.5.0"
+source = "git+https://github.com/zodl-inc/halo2-security-fixes.git?rev=d751768afe0d2105b349dd93f73fde7f2eade088#d751768afe0d2105b349dd93f73fde7f2eade088"
 dependencies = [
  "arrayvec",
  "bitvec",
@@ -823,8 +820,7 @@ checksum = "47716fe1ae67969c5e0b2ef826f32db8c3be72be325e1aa3c1951d06b5575ec5"
 [[package]]
 name = "halo2_poseidon"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fa3da60b81f02f9b33ebc6252d766f843291fb4d2247a07ae73d20b791fc56f"
+source = "git+https://github.com/zodl-inc/halo2-security-fixes.git?rev=d751768afe0d2105b349dd93f73fde7f2eade088#d751768afe0d2105b349dd93f73fde7f2eade088"
 dependencies = [
  "bitvec",
  "ff",
@@ -835,8 +831,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05713f117155643ce10975e0bee44a274bcda2f4bb5ef29a999ad67c1fa8d4d3"
+source = "git+https://github.com/zodl-inc/halo2-security-fixes.git?rev=d751768afe0d2105b349dd93f73fde7f2eade088#d751768afe0d2105b349dd93f73fde7f2eade088"
 dependencies = [
  "blake2b_simd",
  "ff",
@@ -1020,8 +1015,7 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 [[package]]
 name = "imt-tree"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c378a3c5c44b985233906c966bd82a4f775a83aa4e1bde1635961c2eb8673d7b"
+source = "git+https://github.com/zodl-inc/vote-nullifier-pir-security-fixes.git?rev=f8c57997a078fe44f68a65969e34e1c3caab5851#f8c57997a078fe44f68a65969e34e1c3caab5851"
 dependencies = [
  "anyhow",
  "ff",
@@ -1242,9 +1236,8 @@ checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 
 [[package]]
 name = "orchard"
-version = "0.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "497e74492624a1d1cc8c9675a7afb17b430d32fd9efc171513d0840140b5f0c7"
+version = "0.14.0"
+source = "git+https://github.com/zodl-inc/orchard-security-fixes.git?rev=994dad2f7bb8c85e7c8ea336dcc2a814a94bc9fd#994dad2f7bb8c85e7c8ea336dcc2a814a94bc9fd"
 dependencies = [
  "aes",
  "bitvec",
@@ -1303,8 +1296,7 @@ dependencies = [
 [[package]]
 name = "pczt"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d2d3fbc3913cd8f5d4f738ef6a8e34ffa0f683383832321085c6ceae300530c"
+source = "git+https://github.com/zodl-inc/librustzcash-security-fixes?rev=a4bc18408935df58db686e1834c23bcc8c5680e0#a4bc18408935df58db686e1834c23bcc8c5680e0"
 dependencies = [
  "blake2b_simd",
  "bls12_381",
@@ -2181,8 +2173,7 @@ dependencies = [
 [[package]]
 name = "voting-circuits"
 version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0436d69b5884ca107db3de1be5e3e92981a35cd15dbfc6919361316a5dfa8e89"
+source = "git+https://github.com/zodl-inc/voting-circuits-security-fixes?rev=fe0e9a01adf6abc956ab2dd112ba0899891a1797#fe0e9a01adf6abc956ab2dd112ba0899891a1797"
 dependencies = [
  "blake2b_simd",
  "ff",
@@ -2321,9 +2312,8 @@ dependencies = [
 
 [[package]]
 name = "zcash_address"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "355f3db1087875052b5ad0f9e7179a7e7794f0ae9cb1d6ab2b7db29f7b9a9b0b"
+version = "0.12.0"
+source = "git+https://github.com/zodl-inc/librustzcash-security-fixes?rev=a4bc18408935df58db686e1834c23bcc8c5680e0#a4bc18408935df58db686e1834c23bcc8c5680e0"
 dependencies = [
  "bech32",
  "bs58",
@@ -2336,8 +2326,7 @@ dependencies = [
 [[package]]
 name = "zcash_encoding"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1440921903cdb86133fb9e2fe800be488015db2939a30bedb413078a1acb0306"
+source = "git+https://github.com/zodl-inc/librustzcash-security-fixes?rev=a4bc18408935df58db686e1834c23bcc8c5680e0#a4bc18408935df58db686e1834c23bcc8c5680e0"
 dependencies = [
  "corez",
  "hex",
@@ -2346,9 +2335,8 @@ dependencies = [
 
 [[package]]
 name = "zcash_keys"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b340e2bc20698c4d784d920dcda1f270d076bef2b0726b732ca9ca7574d61241"
+version = "0.14.0"
+source = "git+https://github.com/zodl-inc/librustzcash-security-fixes?rev=a4bc18408935df58db686e1834c23bcc8c5680e0#a4bc18408935df58db686e1834c23bcc8c5680e0"
 dependencies = [
  "bech32",
  "blake2b_simd",
@@ -2387,9 +2375,8 @@ dependencies = [
 
 [[package]]
 name = "zcash_primitives"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a59f418f8b1274a526d57dfa3b1a7b3724f04926c84712a27c1602e4b44bfacd"
+version = "0.28.0"
+source = "git+https://github.com/zodl-inc/librustzcash-security-fixes?rev=a4bc18408935df58db686e1834c23bcc8c5680e0#a4bc18408935df58db686e1834c23bcc8c5680e0"
 dependencies = [
  "blake2b_simd",
  "block-buffer 0.11.0-rc.3",
@@ -2417,9 +2404,8 @@ dependencies = [
 
 [[package]]
 name = "zcash_protocol"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79ef3de16a4464a574591aa3e4ea875116372638307d7ae04415279ec187ba88"
+version = "0.9.0"
+source = "git+https://github.com/zodl-inc/librustzcash-security-fixes?rev=a4bc18408935df58db686e1834c23bcc8c5680e0#a4bc18408935df58db686e1834c23bcc8c5680e0"
 dependencies = [
  "corez",
  "document-features",
@@ -2456,9 +2442,8 @@ dependencies = [
 
 [[package]]
 name = "zcash_transparent"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e9ad72051b49432acd56d44ab301bb6467bd70eb23faab3f35539e4ecf2733d"
+version = "0.8.0"
+source = "git+https://github.com/zodl-inc/librustzcash-security-fixes?rev=a4bc18408935df58db686e1834c23bcc8c5680e0#a4bc18408935df58db686e1834c23bcc8c5680e0"
 dependencies = [
  "bip32",
  "bs58",
