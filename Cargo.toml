@@ -5,3 +5,7 @@ members = [
     "vote-commitment-tree-client",
 ]
 resolver = "2"
+
+[patch.crates-io]
+voting-circuits = { git = "https://github.com/zodl-inc/voting-circuits.git", rev = "ed1ea27234e251e98a4b0bf9fcff11babccf1b92" }
+imt-tree = { git = "https://github.com/zodl-inc/vote-nullifier-pir.git", rev = "2411f119cdcff9f8452be7144628948b4088a96f" }

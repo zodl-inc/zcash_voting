@@ -31,7 +31,7 @@ rand = "0.8"
 
 # Hashing
 blake2b_simd = "1"
-halo2_gadgets = "0.4"
+halo2_gadgets = "0.5"
 halo2_proofs = "0.3"
 
 # Serialization
@@ -67,13 +67,13 @@ thiserror = "2"
 # integration tests in `zkp1.rs` (`Note::new`, `Note::dummy`,
 # `Rho::from_nf_old`).
 subtle = "2.6"
-orchard = { version = "=0.13.1", features = ["unstable-voting-circuits"] }
+orchard = { version = "0.14", features = ["unstable-voting-circuits"] }
 voting-circuits = { version = "0.4.2", features = ["share-reveal"] }
 nonempty = "0.11"
 zip32 = "0.2"
 incrementalmerkletree = "0.8"
 
-zcash_protocol = "0.8"
-zcash_keys = { version = "0.13", features = ["orchard"] }
-pczt = { version = "0.6", features = ["orchard", "io-finalizer", "signer", "zcp-builder"] }
-zcash_primitives = "0.27"
+zcash_protocol = "0.9"
+zcash_keys = { version = "0.14", features = ["orchard"] }
+pczt = { version = "0.7", features = ["orchard", "io-finalizer", "signer", "zcp-builder"] }
+zcash_primitives = "0.28"
