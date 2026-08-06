@@ -77,6 +77,15 @@ stage-oriented API:
   on-chain confirmations. `open_proposals` contains only proposals with no
   terminal decision yet.
 
+The Zcash-format transaction signed during delegation is specified separately
+in [Delegation signing transaction (TX1)](docs/delegation-signing-transaction.md).
+It distinguishes the PCZT-only signing artifact from the vote-chain
+delegation submission and includes software-wallet and Keystone examples.
+The companion
+[external software export](docs/exporting-to-external-software.md) defines the
+hotkey private key, delegation signature, and IVK handed to another
+application.
+
 ## Migrating 0.11 to 0.12
 
 - Replace `VotingDb::build_vote_commitment` + `vote_commitment::sign_cast_vote`
@@ -120,9 +129,10 @@ workspace member:
 
 - **`orchard 0.15`** from [zcash/orchard](https://github.com/zcash/orchard),
   with `unstable-voting-circuits` enabled for the governance proof paths.
-- **`pczt`, `zcash_client_backend`, `zcash_client_sqlite`, `zcash_keys`,
-  `zcash_primitives`, and `zcash_protocol`** from a pinned upstream
-  librustzcash revision containing Ironwood historical note selection.
+- **`pczt 0.9.2`, `zcash_client_backend 0.24.0-rc.7`,
+  `zcash_client_sqlite 0.22.0-rc.7`, `zcash_keys 0.16.1`,
+  `zcash_primitives 0.30.0`, and `zcash_protocol 0.10.4`** from published
+  librustzcash releases.
 - **`voting-circuits 0.9.0-rc.3`** from
   [valargroup/voting-circuits](https://github.com/valargroup/voting-circuits)
   for the delegation and vote proof circuits.
