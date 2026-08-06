@@ -10,7 +10,7 @@ use halo2_proofs::{
 use incrementalmerkletree::Hashable;
 use orchard::{
     keys::{Diversifier, FullViewingKey, Scope, SpendValidatingKey},
-    note::{RandomSeed, Rho},
+    note::{ExtractedNoteCommitment, NoteVersion, RandomSeed, Rho},
     tree::{MerkleHashOrchard, MerklePath},
     value::NoteValue,
     NOTE_COMMITMENT_TREE_DEPTH,
@@ -22,11 +22,11 @@ use voting_circuits::delegation::{
     PrecomputedRandomness, RealNoteInput,
 };
 use zcash_keys::keys::UnifiedFullViewingKey;
-use zcash_protocol::consensus::Network;
 
+use crate::governance::BUNDLE_NOTE_SLOTS;
 use crate::types::{
-    ct_option_to_result, validate_32_bytes, DelegationProofResult, NoteInfo, ProofProgressReporter,
-    VotingError, WitnessData,
+    ct_option_to_result, validate_32_bytes, DelegationProgressReporter, DelegationProofResult,
+    Network, NoteInfo, VotingError, WitnessData,
 };
 
 // ================================================================
@@ -35,7 +35,6 @@ use crate::types::{
 
 /// Convert an IMT proof from the PIR data crate into the circuit-crate `ImtProofData`.
 /// Both use the K=2 punctured-range format with `nf_bounds = [nf_lo, nf_mid, nf_hi]`.
-#[cfg(feature = "client-pir")]
 pub fn convert_pir_proof(pir: pir_client::ImtProofData) -> ImtProofData {
     ImtProofData {
         root: pir.root,
@@ -49,7 +48,6 @@ fn base_hex(value: pallas::Base) -> String {
     hex::encode(value.to_repr())
 }
 
-#[cfg(feature = "client-pir")]
 fn validate_pir_proof_raw(
     proof: &pir_client::ImtProofData,
     nullifier: pallas::Base,
@@ -71,7 +69,6 @@ fn validate_pir_proof_raw(
     Ok(())
 }
 
-#[cfg(feature = "client-pir")]
 pub fn validate_and_convert_pir_proof(
     proof: pir_client::ImtProofData,
     nullifier: pallas::Base,
@@ -129,6 +126,20 @@ fn bytes_to_scalar(bytes: &[u8], name: &str) -> Result<pallas::Scalar, VotingErr
     opt.ok_or_else(|| VotingError::InvalidInput {
         message: format!("{name} is not a valid scalar"),
     })
+}
+
+fn supported_note_versions() -> &'static [NoteVersion] {
+    &[NoteVersion::V3]
+}
+
+fn note_matches_stored_identity(
+    note: &orchard::Note,
+    fvk: &FullViewingKey,
+    full_note: &NoteInfo,
+) -> bool {
+    let commitment: ExtractedNoteCommitment = note.commitment().into();
+    commitment.to_bytes().as_slice() == full_note.commitment.as_slice()
+        && note.nullifier(fvk).to_bytes().as_slice() == full_note.nullifier.as_slice()
 }
 
 /// Reconstruct an `orchard::Note` from raw wallet DB fields.
@@ -197,10 +208,26 @@ fn reconstruct_note(
     )?;
 
     let note_value = NoteValue::from_raw(full_note.value);
-    let note = ct_option_to_result(
-        orchard::Note::from_parts(address, note_value, rho, rseed),
-        "failed to reconstruct note from parts",
-    )?;
+    let mut matched_note = None;
+    for version in supported_note_versions() {
+        let Some(candidate) = Option::<orchard::Note>::from(orchard::Note::from_parts(
+            address, note_value, rho, rseed, *version,
+        )) else {
+            continue;
+        };
+
+        if note_matches_stored_identity(&candidate, &fvk, full_note) {
+            if matched_note.is_some() {
+                return Err(VotingError::Internal {
+                    message: "note fields match multiple Orchard note versions".to_string(),
+                });
+            }
+            matched_note = Some(candidate);
+        }
+    }
+    let note = matched_note.ok_or_else(|| VotingError::Internal {
+        message: "reconstructed note does not match stored commitment/nullifier".to_string(),
+    })?;
 
     Ok((note, fvk.clone()))
 }
@@ -282,7 +309,8 @@ fn delegation_cached_keys_large_stack() -> Result<&'static DelegationKeys, Votin
 ///
 /// # Arguments
 ///
-/// - `full_notes`: 1–5 wallet notes (from `get_wallet_notes_at_snapshot`).
+/// - `full_notes`: wallet notes up to [`BUNDLE_NOTE_SLOTS`] (from
+///   `get_wallet_notes_at_snapshot`).
 /// - `hotkey_raw_address`: 43-byte raw Orchard address of the voting hotkey.
 /// - `alpha_bytes`: 32-byte spend auth randomizer scalar.
 /// - `van_comm_rand_bytes`: 32-byte governance commitment blinding factor.
@@ -291,7 +319,7 @@ fn delegation_cached_keys_large_stack() -> Result<&'static DelegationKeys, Votin
 /// - `imt_proofs`: Pre-fetched IMT exclusion proofs (one per real note, from PIR client).
 /// - `extra_imt_proofs`: Additional pre-fetched IMT proofs keyed by nullifier,
 ///   currently used for padded dummy notes.
-/// - `network_id`: 0 = testnet, 1 = mainnet (for UFVK decoding; matches the SDK / wallet DB).
+/// - `network`: network used for UFVK decoding; matches the SDK / wallet DB.
 /// - `progress`: Progress callback.
 #[allow(clippy::too_many_arguments)]
 pub fn build_and_prove_delegation(
@@ -303,14 +331,14 @@ pub fn build_and_prove_delegation(
     merkle_witnesses: &[WitnessData],
     imt_proofs: &[ImtProofData],
     extra_imt_proofs: &[([u8; 32], ImtProofData)],
-    network_id: u32,
-    progress: &dyn ProofProgressReporter,
+    network: Network,
+    progress: &dyn DelegationProgressReporter,
     precomputed_randomness: Option<&PrecomputedRandomness>,
 ) -> Result<DelegationProofResult, VotingError> {
     let n = full_notes.len();
-    if n == 0 || n > 5 {
+    if n == 0 || n > BUNDLE_NOTE_SLOTS {
         return Err(VotingError::InvalidInput {
-            message: format!("expected 1–5 notes, got {n}"),
+            message: format!("expected 1..={BUNDLE_NOTE_SLOTS} notes, got {n}"),
         });
     }
     if merkle_witnesses.len() != n {
@@ -329,18 +357,6 @@ pub fn build_and_prove_delegation(
             ),
         });
     }
-
-    let network = match network_id {
-        0 => Network::TestNetwork,
-        1 => Network::MainNetwork,
-        _ => {
-            return Err(VotingError::InvalidInput {
-                message: format!(
-                    "invalid network_id {network_id}, expected 0 (testnet) or 1 (mainnet)"
-                ),
-            })
-        }
-    };
 
     // Parse scalar/field inputs.
     let alpha = bytes_to_scalar(alpha_bytes, "alpha")?;
@@ -460,12 +476,12 @@ pub fn build_and_prove_delegation(
         message: format!("delegation bundle build failed: {e}"),
     })?;
 
-    progress.on_progress(0.1);
+    progress.on_progress(crate::delegate::DelegationProgress::ProofProgress(0.1));
 
     // Fill the downstream cache on a large-stack thread when warm-up was missed.
     let (params, pk, _vk) = delegation_cached_keys_large_stack()?;
 
-    progress.on_progress(0.5);
+    progress.on_progress(crate::delegate::DelegationProgress::ProofProgress(0.5));
 
     // Create the proof on a dedicated large-stack thread. For larger circuits,
     // create_proof can also exhaust the default thread stack on simulator builds.
@@ -502,7 +518,7 @@ pub fn build_and_prove_delegation(
         })?
     })?;
 
-    progress.on_progress(1.0);
+    progress.on_progress(crate::delegate::DelegationProgress::ProofProgress(1.0));
 
     // Extract public inputs as 32-byte LE arrays.
     let public_inputs: Vec<Vec<u8>> = instance_vec
@@ -542,19 +558,24 @@ mod tests {
         keys::Scope, note::commitment::ExtractedNoteCommitment, note::Rho, tree::MerkleHashOrchard,
         value::NoteValue, NOTE_COMMITMENT_TREE_DEPTH as TEST_TREE_DEPTH,
     };
+    use rand::RngCore;
     use voting_circuits::delegation::SpacedLeafImtProvider;
 
     struct TestReporter {
         count: Arc<AtomicU32>,
     }
 
-    impl ProofProgressReporter for TestReporter {
-        fn on_progress(&self, _progress: f64) {
-            self.count.fetch_add(1, Ordering::Relaxed);
+    impl crate::types::DelegationProgressReporter for TestReporter {
+        fn on_progress(&self, progress: crate::delegate::DelegationProgress) {
+            if matches!(
+                progress,
+                crate::delegate::DelegationProgress::ProofProgress(_)
+            ) {
+                self.count.fetch_add(1, Ordering::Relaxed);
+            }
         }
     }
 
-    #[cfg(feature = "client-pir")]
     fn raw_pir_proof(proof: ImtProofData) -> pir_client::ImtProofData {
         pir_client::ImtProofData {
             root: proof.root,
@@ -564,7 +585,6 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "client-pir")]
     #[test]
     fn validate_and_convert_pir_proof_accepts_valid_proof() {
         let imt = SpacedLeafImtProvider::new();
@@ -577,7 +597,6 @@ mod tests {
         assert_eq!(converted.root, root);
     }
 
-    #[cfg(feature = "client-pir")]
     #[test]
     fn validate_and_convert_pir_proof_rejects_unverified_path() {
         let imt = SpacedLeafImtProvider::new();
@@ -594,7 +613,6 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "client-pir")]
     #[test]
     fn validate_and_convert_pir_proof_rejects_wrong_root() {
         let imt = SpacedLeafImtProvider::new();
@@ -625,12 +643,170 @@ mod tests {
             &[],
             &[],
             &[],
-            0,
+            Network::Testnet,
             &reporter,
             None,
         );
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("1–5 notes"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains(&format!("1..={BUNDLE_NOTE_SLOTS} notes")));
+    }
+
+    fn test_viewing_key(network: &Network) -> (String, FullViewingKey) {
+        use zcash_keys::keys::UnifiedSpendingKey;
+        use zip32::AccountId;
+
+        let seed = [0x42u8; 64];
+        let account = AccountId::try_from(0u32).unwrap();
+        let usk = UnifiedSpendingKey::from_seed(network, &seed, account).unwrap();
+        let ufvk = usk.to_unified_full_viewing_key();
+        let ufvk_str = ufvk.encode(network);
+        let fvk = ufvk.orchard().unwrap().clone();
+        (ufvk_str, fvk)
+    }
+
+    fn random_seed_for_rho(rho: &Rho, rng: &mut impl RngCore) -> RandomSeed {
+        loop {
+            let mut bytes = [0u8; 32];
+            rng.fill_bytes(&mut bytes);
+            if let Some(rseed) = Option::<RandomSeed>::from(RandomSeed::from_bytes(bytes, rho)) {
+                break rseed;
+            }
+        }
+    }
+
+    fn test_note_with_version(
+        fvk: &FullViewingKey,
+        address: orchard::Address,
+        value: u64,
+        version: NoteVersion,
+        rng: &mut impl RngCore,
+    ) -> orchard::Note {
+        loop {
+            let (_, _, dummy_parent) = orchard::Note::dummy(&mut *rng, None, NoteVersion::V2);
+            let rho = Rho::from_nf_old(dummy_parent.nullifier(fvk));
+            let rseed = random_seed_for_rho(&rho, rng);
+            if let Some(note) = Option::<orchard::Note>::from(orchard::Note::from_parts(
+                address,
+                NoteValue::from_raw(value),
+                rho,
+                rseed,
+                version,
+            )) {
+                break note;
+            }
+        }
+    }
+
+    fn note_info_for_test_note(
+        note: &orchard::Note,
+        fvk: &FullViewingKey,
+        ufvk_str: String,
+        value: u64,
+    ) -> NoteInfo {
+        let cmx: ExtractedNoteCommitment = note.commitment().into();
+        NoteInfo {
+            commitment: cmx.to_bytes().to_vec(),
+            diversifier: note.recipient().diversifier().as_array().to_vec(),
+            value,
+            rho: note.rho().to_bytes().to_vec(),
+            rseed: note.rseed().as_bytes().to_vec(),
+            nullifier: note.nullifier(fvk).to_bytes().to_vec(),
+            position: 0,
+            scope: 0,
+            ufvk_str,
+        }
+    }
+
+    fn rebuild_test_note_with_version(
+        full_note: &NoteInfo,
+        network: &Network,
+        version: NoteVersion,
+    ) -> orchard::Note {
+        let ufvk = UnifiedFullViewingKey::decode(network, &full_note.ufvk_str).unwrap();
+        let fvk = ufvk.orchard().unwrap().clone();
+        let diversifier_arr: [u8; 11] = full_note.diversifier.as_slice().try_into().unwrap();
+        let address = fvk.address(Diversifier::from_bytes(diversifier_arr), Scope::External);
+        let rho_arr: [u8; 32] = full_note.rho.as_slice().try_into().unwrap();
+        let rho = Rho::from_bytes(&rho_arr).unwrap();
+        let rseed_arr: [u8; 32] = full_note.rseed.as_slice().try_into().unwrap();
+        let rseed = RandomSeed::from_bytes(rseed_arr, &rho).unwrap();
+        orchard::Note::from_parts(
+            address,
+            NoteValue::from_raw(full_note.value),
+            rho,
+            rseed,
+            version,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn reconstruct_note_accepts_regtest_network() {
+        let network = Network::Regtest;
+        let (ufvk_str, fvk) = test_viewing_key(&network);
+        let address = fvk.address_at(0u32, Scope::External);
+
+        let mut rng = OsRng;
+        let note = test_note_with_version(&fvk, address, 1, NoteVersion::V3, &mut rng);
+        let full_note = note_info_for_test_note(&note, &fvk, ufvk_str, 1);
+
+        let (rebuilt, rebuilt_fvk) = reconstruct_note(&full_note, &network).unwrap();
+
+        assert_eq!(rebuilt.version(), NoteVersion::V3);
+        assert_eq!(
+            ExtractedNoteCommitment::from(rebuilt.commitment()),
+            ExtractedNoteCommitment::from(note.commitment())
+        );
+        assert_eq!(rebuilt.nullifier(&rebuilt_fvk), note.nullifier(&fvk));
+    }
+
+    #[test]
+    fn reconstruct_note_infers_ironwood_note_version() {
+        let network = Network::Regtest;
+        let (ufvk_str, fvk) = test_viewing_key(&network);
+        let address = fvk.address_at(0u32, Scope::External);
+
+        let mut rng = OsRng;
+        let note = test_note_with_version(&fvk, address, 1, NoteVersion::V3, &mut rng);
+        let full_note = note_info_for_test_note(&note, &fvk, ufvk_str, 1);
+
+        let v2_candidate = rebuild_test_note_with_version(&full_note, &network, NoteVersion::V2);
+        assert_ne!(
+            ExtractedNoteCommitment::from(v2_candidate.commitment()),
+            ExtractedNoteCommitment::from(note.commitment())
+        );
+
+        let (rebuilt, rebuilt_fvk) = reconstruct_note(&full_note, &network).unwrap();
+
+        assert_eq!(rebuilt.version(), NoteVersion::V3);
+        assert_eq!(
+            ExtractedNoteCommitment::from(rebuilt.commitment()),
+            ExtractedNoteCommitment::from(note.commitment())
+        );
+        assert_eq!(rebuilt.nullifier(&rebuilt_fvk), note.nullifier(&fvk));
+    }
+
+    #[test]
+    fn reconstruct_note_rejects_mismatched_identity() {
+        let network = Network::Regtest;
+        let (ufvk_str, fvk) = test_viewing_key(&network);
+        let address = fvk.address_at(0u32, Scope::External);
+
+        let mut rng = OsRng;
+        let note = test_note_with_version(&fvk, address, 1, NoteVersion::V2, &mut rng);
+        let mut full_note = note_info_for_test_note(&note, &fvk, ufvk_str, 1);
+        full_note.commitment[0] ^= 1;
+
+        let err = reconstruct_note(&full_note, &network).unwrap_err();
+
+        assert!(
+            err.to_string()
+                .contains("reconstructed note does not match stored commitment/nullifier"),
+            "unexpected error: {err}"
+        );
     }
 
     /// Real Halo2 delegation proof end-to-end test.
@@ -639,7 +815,8 @@ mod tests {
     /// non-membership proofs as `ImtProofData`, and calls
     /// `build_and_prove_delegation()` to generate a real Halo2 proof.
     ///
-    /// Uses 5 notes to avoid padding (no PIR server needed for padded notes).
+    /// Uses a full note-slot bundle to avoid padding (no PIR server needed for
+    /// padded notes).
     /// Long-running due to keygen + proof generation.
     ///
     /// Run with: `cargo test -p zcash_voting test_real_delegation_proof -- --ignored --nocapture`
@@ -673,18 +850,24 @@ mod tests {
         let hotkey_addr = hotkey_fvk.address_at(0u32, Scope::External);
         let hotkey_raw_address = hotkey_addr.to_raw_address_bytes().to_vec();
 
-        // 3. Create 5 notes (fills all 5 slots → no padding → no IMT server needed)
+        // 3. Fill all note slots so no padding or IMT server is needed.
         let mut rng = OsRng;
-        let note_values = [4_000_000u64, 4_000_000, 3_000_000, 2_000_000, 1_000_000]; // 14M total >= 12.5M min
+        let note_values = vec![
+            (crate::governance::BALLOT_DIVISOR / BUNDLE_NOTE_SLOTS as u64) + 1;
+            BUNDLE_NOTE_SLOTS
+        ];
         let address = fvk.address_at(0u32, Scope::External);
 
         let mut notes = Vec::new();
         for &v in &note_values {
-            let (_, _, dummy_parent) = orchard::Note::dummy(&mut rng, None);
+            // Voting notes are Ironwood/V3: `reconstruct_note` accepts no other
+            // version, and `voting-circuits` rejects non-V3 real notes.
+            let (_, _, dummy_parent) = orchard::Note::dummy(&mut rng, None, NoteVersion::V3);
             let note = orchard::Note::new(
                 address,
                 NoteValue::from_raw(v),
                 Rho::from_nf_old(dummy_parent.nullifier(&fvk)),
+                NoteVersion::V3,
                 &mut rng,
             );
             notes.push(note);
@@ -808,7 +991,7 @@ mod tests {
             &merkle_witnesses,
             &imt_proofs,
             &[],
-            1, // mainnet (SDK convention: 0=testnet, 1=mainnet)
+            Network::Mainnet,
             &reporter,
             None,
         )

@@ -2,9 +2,10 @@ use rusqlite::Connection;
 
 use crate::VotingError;
 
-const CURRENT_VERSION: u32 = 9;
+const CURRENT_VERSION: u32 = 12;
 
-const RESET_SQL: &str = "DROP TABLE IF EXISTS imt_proofs;
+const RESET_SQL: &str = "DROP TABLE IF EXISTS ballot_intent;
+DROP TABLE IF EXISTS imt_proofs;
 DROP TABLE IF EXISTS share_delegations;
 DROP TABLE IF EXISTS keystone_signatures;
 DROP TABLE IF EXISTS votes;
@@ -102,7 +103,14 @@ mod tests {
         let mut conn = Connection::open_in_memory().unwrap();
         conn.execute_batch(include_str!("migrations/001_init.sql"))
             .unwrap();
-        queries::insert_round(&conn, "wallet", &test_params(), None).unwrap();
+        queries::insert_round(
+            &conn,
+            "wallet",
+            crate::Network::Testnet,
+            &test_params(),
+            None,
+        )
+        .unwrap();
         queries::insert_bundle(&conn, "test-round", "wallet", 0, &[1]).unwrap();
         conn.pragma_update(None, "user_version", 8).unwrap();
 
@@ -170,6 +178,10 @@ mod tests {
         assert!(tables.contains(&"imt_proofs".to_string()));
         assert!(tables.contains(&"share_delegations".to_string()));
         assert!(tables.contains(&"keystone_signatures".to_string()));
+        assert!(tables.contains(&"ballot_intent".to_string()));
+
+        let round_columns = table_columns(&conn, "rounds");
+        assert!(round_columns.contains(&"network".to_string()));
     }
 
     /// Verify that the bundles table columns exist after migration and can round-trip BLOB data.
@@ -180,7 +192,7 @@ mod tests {
 
         // Insert a round first
         conn.execute(
-            "INSERT INTO rounds (round_id, wallet_id, snapshot_height, ea_pk, nc_root, nullifier_imt_root, phase, created_at) VALUES ('test', 'w1', 1, X'00', X'00', X'00', 0, 0)",
+            "INSERT INTO rounds (round_id, wallet_id, network, snapshot_height, ea_pk, nc_root, nullifier_imt_root, phase, created_at) VALUES ('test', 'w1', 'testnet', 1, X'00', X'00', X'00', 0, 0)",
             [],
         ).unwrap();
 
