@@ -184,11 +184,37 @@ jobs:
           export CONSUMER_DIR
           CONSUMER_DIR="$(mktemp -d)"
           python3 - <<'PY'
+          import json
           import os
           import pathlib
           import subprocess
+          import tomllib
 
           root = pathlib.Path.cwd()
+
+
+          def toml_value(value):
+              if isinstance(value, dict):
+                  return "{ " + ", ".join(
+                      f"{key} = {toml_value(item)}" for key, item in value.items()
+                  ) + " }"
+              if isinstance(value, list):
+                  return "[" + ", ".join(toml_value(item) for item in value) + "]"
+              return json.dumps(value)
+
+
+          # A git consumer does not get the [patch] tables of this workspace.
+          # Copy them, as each consumer must while this workspace has git sources.
+          with (root / "Cargo.toml").open("rb") as manifest_file:
+              workspace_patches = tomllib.load(manifest_file).get("patch", {})
+          patch_tables = "".join(
+              f"\n[patch.{registry}]\n"
+              + "".join(
+                  f"{name} = {toml_value(source)}\n"
+                  for name, source in entries.items()
+              )
+              for registry, entries in workspace_patches.items()
+          )
           revision = subprocess.check_output(
               ["git", "rev-parse", "HEAD"], text=True
           ).strip()
@@ -209,7 +235,7 @@ jobs:
 
           [dependencies]
           {dependency}
-          """
+          {patch_tables}"""
               )
               (consumer / "src" / "main.rs").write_text(
                   "use zcash_voting::wire::VotingRoundParams;\n"
@@ -223,7 +249,7 @@ jobs:
           import json
           import os
           import pathlib
-          import re
+          import tomllib
 
           consumer = pathlib.Path(os.environ["CONSUMER_DIR"]) / "gemini"
           metadata_path = consumer / "metadata.json"
@@ -242,11 +268,12 @@ jobs:
               for node in metadata["resolve"]["nodes"]
               if packages_by_id[node["id"]].startswith("zakura-")
           } - allowed
-          lockfile = set(re.findall(
-              r'^name = "([^"]+)"$',
-              (consumer / "Cargo.lock").read_text(),
-              re.MULTILINE,
-          ))
+          # Read only the locked packages. Unused patches are not dependencies.
+          with (consumer / "Cargo.lock").open("rb") as lockfile_file:
+              lockfile = {
+                  package["name"]
+                  for package in tomllib.load(lockfile_file).get("package", [])
+              }
           lockfile = {
               name for name in lockfile if name.startswith("zakura-")
           } - allowed
@@ -262,7 +289,14 @@ jobs:
           cargo check --manifest-path "$CONSUMER_DIR/vizor/Cargo.toml"
       - name: Package voting crates
         run: |
-          cargo package -p vote-commitment-tree --locked
+          # A packaged crate builds against crates.io without the [patch]
+          # tables of this workspace. While the workspace has [patch] tables,
+          # check the file set only.
+          verify=()
+          if python3 -c 'import sys, tomllib; sys.exit(0 if tomllib.load(open("Cargo.toml", "rb")).get("patch") else 1)'; then
+            verify=(--no-verify)
+          fi
+          cargo package -p vote-commitment-tree --locked "${verify[@]}"
           # The client and primary crate depend on the new VCT versions.
           # Validate their release file sets before those dependencies publish.
           cargo package -p vote-commitment-tree-client --list
