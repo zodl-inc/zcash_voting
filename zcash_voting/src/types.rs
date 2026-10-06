@@ -633,7 +633,7 @@ impl NoteInfo {
     /// # Errors
     ///
     /// Returns [`VotingError::InvalidInput`] if `ufvk` has no Orchard component
-    /// or if `note` is not an Ironwood/V3 note.
+    /// or no unified encoding, or if `note` is not an Ironwood/V3 note.
     pub fn from_orchard_note<P: consensus::Parameters>(
         note: &orchard::note::Note,
         position: u64,
@@ -668,7 +668,7 @@ impl NoteInfo {
             rho: note.rho().to_bytes().to_vec(),
             rseed: note.rseed().as_bytes().to_vec(),
             scope,
-            ufvk_str: ufvk.encode(network),
+            ufvk_str: crate::backend::encode_ufvk(ufvk, network)?,
         })
     }
 }
@@ -1586,7 +1586,10 @@ mod tests {
         assert_eq!(note_info.rho, note.rho().to_bytes().to_vec());
         assert_eq!(note_info.rseed, note.rseed().as_bytes().to_vec());
         assert_eq!(note_info.scope, 0);
-        assert_eq!(note_info.ufvk_str, ufvk.encode(&TEST_NETWORK));
+        assert_eq!(
+            note_info.ufvk_str,
+            crate::backend::encode_ufvk(&ufvk, &TEST_NETWORK).unwrap()
+        );
     }
 
     #[test]

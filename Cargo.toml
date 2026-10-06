@@ -57,12 +57,12 @@ zakura-keys = { git = "https://github.com/zodl-inc/zakura-common", rev = "c714f3
 zakura-transparent = { git = "https://github.com/zodl-inc/zakura-common", rev = "c714f350a629d5419a1c341c192812ce58cb4013" }
 zakura-primitives = { git = "https://github.com/zodl-inc/zakura-common", rev = "c714f350a629d5419a1c341c192812ce58cb4013" }
 zakura-zip321 = { git = "https://github.com/zodl-inc/zakura-common", rev = "c714f350a629d5419a1c341c192812ce58cb4013" }
-zakura-wallet-lib = { git = "https://github.com/zodl-inc/zakura-wallet-libraries", rev = "8128fc437ae5c65c5e108cfacf95046714b34db8" }
-voting-circuits = { git = "https://github.com/zodl-inc/voting-circuits", rev = "1e33d48e436482e0f364ff0f9f886904f88fa515" }
-voting-crypto-deps = { git = "https://github.com/zodl-inc/voting-circuits", rev = "1e33d48e436482e0f364ff0f9f886904f88fa515" }
-imt-tree = { git = "https://github.com/zodl-inc/voting-circuits", rev = "1e33d48e436482e0f364ff0f9f886904f88fa515" }
-pir-types = { git = "https://github.com/zodl-inc/vote-nullifier-pir", rev = "9c62d0565f6cc963e7875f9f40822764431eeab9" }
-pir-client = { git = "https://github.com/zodl-inc/vote-nullifier-pir", rev = "9c62d0565f6cc963e7875f9f40822764431eeab9" }
+zakura-wallet-lib = { git = "https://github.com/zodl-inc/zakura-wallet-libraries", rev = "29fa15e0ca839d8a6807721ea7275f0994f09b72" }
+voting-circuits = { git = "https://github.com/zodl-inc/voting-circuits", rev = "6a399f9260ebbb278cc180a23c89dc73323ee5f5" }
+voting-crypto-deps = { git = "https://github.com/zodl-inc/voting-circuits", rev = "6a399f9260ebbb278cc180a23c89dc73323ee5f5" }
+imt-tree = { git = "https://github.com/zodl-inc/voting-circuits", rev = "6a399f9260ebbb278cc180a23c89dc73323ee5f5" }
+pir-types = { git = "https://github.com/zodl-inc/vote-nullifier-pir", rev = "74327f9073e310b2b915d30f2a3c4d7918db7778" }
+pir-client = { git = "https://github.com/zodl-inc/vote-nullifier-pir", rev = "74327f9073e310b2b915d30f2a3c4d7918db7778" }
 
 [profile.test.package.imt-tree]
 opt-level = 3
