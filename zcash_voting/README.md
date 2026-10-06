@@ -408,9 +408,9 @@ This release line requires Rust 1.91 or newer.
 - **`vote-commitment-tree 0.6.1`** and
   **`vote-commitment-tree-client 0.8.1`** for vote commitment tree state
   and HTTP sync.
-- **`pczt 0.10.0-pre.0`, `zcash_client_backend 0.25.0-pre.0`,
-  `zcash_client_sqlite 0.23.0-pre.0`, `zcash_keys 0.17.0-pre.0`,
-  `zcash_primitives 0.31.0-pre.0`, and `zcash_protocol 0.11.0-pre.0`** from
+- **`pczt 0.10.0-pre.1`, `zcash_client_backend 0.25.0-pre.1`,
+  `zcash_client_sqlite 0.23.0-pre.1`, `zcash_keys 0.17.0-pre.1`,
+  `zcash_primitives 0.31.0-pre.1`, and `zcash_protocol 0.11.0-pre.0`** from
   the librustzcash NU7 pre-releases (or the stable `zakura-*` family and RC5 wallet crates in
   `zakura` builds).
 

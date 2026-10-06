@@ -111,9 +111,9 @@ The LRZ backend uses one Ironwood dependency stack:
 
 - **`orchard 0.16`** from [zcash/orchard](https://github.com/zcash/orchard),
   with `unstable-voting-circuits` enabled for the governance proof paths.
-- **`pczt 0.10.0-pre.0`, `zcash_client_backend 0.25.0-pre.0`,
-  `zcash_client_sqlite 0.23.0-pre.0`, `zcash_keys 0.17.0-pre.0`,
-  `zcash_primitives 0.31.0-pre.0`, and `zcash_protocol 0.11.0-pre.0`** from
+- **`pczt 0.10.0-pre.1`, `zcash_client_backend 0.25.0-pre.1`,
+  `zcash_client_sqlite 0.23.0-pre.1`, `zcash_keys 0.17.0-pre.1`,
+  `zcash_primitives 0.31.0-pre.1`, and `zcash_protocol 0.11.0-pre.0`** from
   the librustzcash NU7 pre-releases.
 - **`voting-circuits 0.12.2`** from
   [valargroup/voting-circuits](https://github.com/valargroup/voting-circuits)

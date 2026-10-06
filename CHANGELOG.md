@@ -16,9 +16,9 @@ and this workspace adheres to [Semantic Versioning](https://semver.org/spec/v2.0
 - `zcash_voting` now requires `zakura-wallet-lib` `^0.1.0-rc6` instead of
   exactly `0.1.0-rc6`.
 - The `lrz` backend moved to the librustzcash NU7 pre-releases:
-  `zcash_protocol =0.11.0-pre.0`, `zcash_client_backend =0.25.0-pre.0`,
-  `zcash_client_sqlite =0.23.0-pre.0`, `zcash_keys =0.17.0-pre.0`,
-  `pczt =0.10.0-pre.0`, `zcash_primitives =0.31.0-pre.0`, and `orchard` 0.16,
+  `zcash_protocol =0.11.0-pre.0`, `zcash_client_backend =0.25.0-pre.1`,
+  `zcash_client_sqlite =0.23.0-pre.1`, `zcash_keys =0.17.0-pre.1`,
+  `pczt =0.10.0-pre.1`, `zcash_primitives =0.31.0-pre.1`, and `orchard` 0.16,
   with `incrementalmerkletree` 0.9 and `zip32` 0.3. Types from these crates in
   the `zcash_voting` API, including `zip32::Scope` and `zcash_voting::backend`,
   change accordingly.
