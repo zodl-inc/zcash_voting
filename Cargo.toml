@@ -24,7 +24,7 @@ voting-crypto-deps = { version = "=0.2.4", default-features = false }
 zcash_protocol = { version = "2.0.0", package = "zakura-protocol", default-features = false }
 # Pre-release equality pin: the LRZ backend tracks the librustzcash NU7
 # pre-release stack, whose pre-releases make no compatibility promise.
-lrz_zcash_protocol = { version = "=0.11.0-pre.0", package = "zcash_protocol" }
+lrz_zcash_protocol = { version = "=0.11.0", package = "zcash_protocol" }
 
 # The published Zakura 2.0 crates require the pre-release `bip32 0.6.0-pre.1`
 # stack, which cannot share a lockfile with the stable `bip32 0.6` that the
@@ -57,12 +57,12 @@ zakura-keys = { git = "https://github.com/zodl-inc/zakura-common", rev = "c714f3
 zakura-transparent = { git = "https://github.com/zodl-inc/zakura-common", rev = "c714f350a629d5419a1c341c192812ce58cb4013" }
 zakura-primitives = { git = "https://github.com/zodl-inc/zakura-common", rev = "c714f350a629d5419a1c341c192812ce58cb4013" }
 zakura-zip321 = { git = "https://github.com/zodl-inc/zakura-common", rev = "c714f350a629d5419a1c341c192812ce58cb4013" }
-zakura-wallet-lib = { git = "https://github.com/zodl-inc/zakura-wallet-libraries", rev = "29fa15e0ca839d8a6807721ea7275f0994f09b72" }
-voting-circuits = { git = "https://github.com/zodl-inc/voting-circuits", rev = "6a399f9260ebbb278cc180a23c89dc73323ee5f5" }
-voting-crypto-deps = { git = "https://github.com/zodl-inc/voting-circuits", rev = "6a399f9260ebbb278cc180a23c89dc73323ee5f5" }
-imt-tree = { git = "https://github.com/zodl-inc/voting-circuits", rev = "6a399f9260ebbb278cc180a23c89dc73323ee5f5" }
-pir-types = { git = "https://github.com/zodl-inc/vote-nullifier-pir", rev = "74327f9073e310b2b915d30f2a3c4d7918db7778" }
-pir-client = { git = "https://github.com/zodl-inc/vote-nullifier-pir", rev = "74327f9073e310b2b915d30f2a3c4d7918db7778" }
+zakura-wallet-lib = { git = "https://github.com/zodl-inc/zakura-wallet-libraries", rev = "765bbf1db250c9c16a110177e8022aa78e339a02" }
+voting-circuits = { git = "https://github.com/zodl-inc/voting-circuits", rev = "19fcf8d155d00f33f10af7d41fd0f3e2fba3322c" }
+voting-crypto-deps = { git = "https://github.com/zodl-inc/voting-circuits", rev = "19fcf8d155d00f33f10af7d41fd0f3e2fba3322c" }
+imt-tree = { git = "https://github.com/zodl-inc/voting-circuits", rev = "19fcf8d155d00f33f10af7d41fd0f3e2fba3322c" }
+pir-types = { git = "https://github.com/zodl-inc/vote-nullifier-pir", rev = "e25ccf96f0311e6eb64c2d4ddd4e06a4ac4114dc" }
+pir-client = { git = "https://github.com/zodl-inc/vote-nullifier-pir", rev = "e25ccf96f0311e6eb64c2d4ddd4e06a4ac4114dc" }
 
 [profile.test.package.imt-tree]
 opt-level = 3

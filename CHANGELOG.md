@@ -13,6 +13,11 @@ and this workspace adheres to [Semantic Versioning](https://semver.org/spec/v2.0
 
 ### Changed
 
+- The `lrz` backend now requires the stable `zcash_protocol` `0.11.0`, the first
+  release that sets the NU7 mainnet activation height, in place of
+  `0.11.0-pre.0`. The `[patch.crates-io]` entries for `zakura-wallet-lib`,
+  `voting-circuits`, `voting-crypto-deps`, `imt-tree`, `pir-types` and
+  `pir-client` move to the revisions built on the stable librustzcash releases.
 - `zcash_voting` now requires `zakura-wallet-lib` `^0.1.0-rc6` instead of
   exactly `0.1.0-rc6`.
 - The `lrz` backend moved to the librustzcash NU7 pre-releases:
