@@ -261,6 +261,11 @@ jobs:
               )
           PY
           cargo check --manifest-path "$CONSUMER_DIR/gemini/Cargo.toml"
+          # The Zakura consumer builds with this repository's Cargo.lock. zakura-wallet-lib
+          # 0.1.0-rc9.6 does not pin zakura-client-backend, zakura-client-sqlite or zakura-pczt,
+          # so a fresh resolution takes their releases of 2026-11-11, built on the Zakura 5.4.0
+          # crates, next to the 4.0.0 ones this version uses, and that mix does not compile.
+          cp Cargo.lock "$CONSUMER_DIR/vizor/Cargo.lock"
           cargo check --manifest-path "$CONSUMER_DIR/vizor/Cargo.toml"
       - name: Package voting crates
         run: |

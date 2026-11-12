@@ -3,7 +3,7 @@ pub(crate) use crate::backend::{orchard, zcash_keys};
 use orchard::keys::{FullViewingKey, SpendingKey};
 use rand::RngCore;
 use voting_crypto_deps::zip32::{AccountId, Scope};
-use zcash_keys::keys::UnifiedSpendingKey;
+use zcash_protocol::consensus::{NetworkConstants, Parameters};
 use zeroize::Zeroizing;
 
 use crate::types::{Network, VotingError, VotingHotkey};
@@ -82,13 +82,14 @@ pub(crate) fn spending_key_from_hotkey_seed(
         message: format!("invalid account_index {account_index}"),
     })?;
 
-    let usk = UnifiedSpendingKey::from_seed(&network, seed, account).map_err(|e| {
+    // Derived on the Orchard ZIP 32 path directly, as `UnifiedSpendingKey::from_seed` does for
+    // its Orchard key: the same key, without depending on the accessor's return type, which
+    // differs between `zcash_keys` releases.
+    SpendingKey::from_zip32_seed(seed, network.network_type().coin_type(), account).map_err(|e| {
         VotingError::InvalidInput {
-            message: format!("failed to derive UnifiedSpendingKey from seed: {e}"),
+            message: format!("failed to derive the Orchard spending key from seed: {e}"),
         }
-    })?;
-
-    Ok(usk.orchard().to_owned())
+    })
 }
 
 fn raw_orchard_address_from_seed(
